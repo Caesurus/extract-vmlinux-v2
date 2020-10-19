@@ -68,7 +68,7 @@ func NewKernelExtractor(data *[]byte, ignoreValidation bool) *KernelExtractor {
 
 	k.algos["XZ"] = supportedAlgo{
 		Name:        "XZ",
-		ExtractFunc: extractXZData,
+		ExtractFunc: nil,
 		Suffix:      "xz",
 		pattern:     []byte("\3757zXZ\000"),
 	}
@@ -126,9 +126,9 @@ func (k KernelExtractor) ExtractAll() map[string][]byte {
 				fmt.Printf("Attempting extraction with %s offset:%d \n", desc, offset)
 				data, err := k.callExtractor(algo, offset)
 
-				if nil != err{
+				if nil != err {
 					fmt.Println(err)
-				}else if len(data) > 0 {
+				} else if len(data) > 0 {
 					fmt.Printf("%d bytes extracted\n", len(data))
 					filename := fmt.Sprintf("vmlinux_%s_%d.bin", algo.Name, offset)
 					files[filename] = data
