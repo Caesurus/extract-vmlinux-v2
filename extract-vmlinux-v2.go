@@ -16,6 +16,7 @@ func main() {
 	opts.Required = true
 
 	var kernelFile *os.File = parser.File("f", "file", os.O_RDWR, os.FileMode(0600), &opts)
+	var ignoreValidation *bool = parser.Flag("i", "ignore", &argparse.Options{})
 
 	// Parse input
 	err := parser.Parse(os.Args)
@@ -30,8 +31,6 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-
-	ke := NewKernelExtractor(&data)
+	ke := NewKernelExtractor(&data, *ignoreValidation)
 	ke.ExtractAll()
-
 }

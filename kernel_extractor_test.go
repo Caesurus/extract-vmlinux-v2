@@ -16,7 +16,7 @@ func TestReturnBytes(t *testing.T) {
 	data[10] = '\213'
 	data[11] = '\010'
 
-	ke := NewKernelExtractor(&data)
+	ke := NewKernelExtractor(&data, true)
 
 	subBytes := ke.ReturnBytes(3)
 	assert.Equal(t, []byte{0x1f, 0x8b, 0x8, 0x0, 0x0, 0x0, 0x1f, 0x8b, 0x8}, subBytes)
@@ -24,7 +24,7 @@ func TestReturnBytes(t *testing.T) {
 
 func TestNoPattern(t *testing.T) {
 	data := make([]byte, 50)
-	ke := NewKernelExtractor(&data)
+	ke := NewKernelExtractor(&data, true)
 
 	found, idx := ke.searchGZIPPattern()
 	assert.False(t, found)
@@ -41,7 +41,7 @@ func TestGZIPIndex(t *testing.T) {
 	data[31] = '\213'
 	data[32] = '\010'
 
-	ke := NewKernelExtractor(&data)
+	ke := NewKernelExtractor(&data, true)
 
 	found, idx := ke.searchGZIPPattern()
 	assert.True(t, found)
@@ -57,7 +57,7 @@ func TestXZIndex(t *testing.T) {
 	data[14] = 'Z'
 	data[15] = '\000'
 
-	ke := NewKernelExtractor(&data)
+	ke := NewKernelExtractor(&data, true)
 
 	found, idx := ke.searchXZPattern()
 	assert.True(t, found)
@@ -69,7 +69,7 @@ func TestBZIPIndex(t *testing.T) {
 	data[10] = 'B'
 	data[11] = 'Z'
 	data[12] = 'h'
-	ke := NewKernelExtractor(&data)
+	ke := NewKernelExtractor(&data, true)
 
 	found, idx := ke.searchBZIPPattern()
 	assert.True(t, found)
@@ -83,7 +83,7 @@ func TestLZMAIndex(t *testing.T) {
 	data[12] = '\000'
 	data[13] = '\000'
 
-	ke := NewKernelExtractor(&data)
+	ke := NewKernelExtractor(&data, true)
 
 	found, idx := ke.searchLZMAPattern()
 	assert.True(t, found)
@@ -96,7 +96,7 @@ func TestLZOPIndex(t *testing.T) {
 	data[11] = '\114'
 	data[12] = '\132'
 
-	ke := NewKernelExtractor(&data)
+	ke := NewKernelExtractor(&data, true)
 
 	found, idx := ke.searchLZOPPattern()
 	assert.True(t, found)
@@ -110,7 +110,7 @@ func TestLZ4Index(t *testing.T) {
 	data[12] = 'L'
 	data[13] = '\030'
 
-	ke := NewKernelExtractor(&data)
+	ke := NewKernelExtractor(&data, true)
 
 	found, idx := ke.searchLZ4Pattern()
 	assert.True(t, found)
@@ -124,7 +124,7 @@ func TestZSTDIndex(t *testing.T) {
 	data[12] = '/'
 	data[13] = '\375'
 
-	ke := NewKernelExtractor(&data)
+	ke := NewKernelExtractor(&data, true)
 
 	found, idx := ke.searchZSTDPattern()
 	assert.True(t, found)
