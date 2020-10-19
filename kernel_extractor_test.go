@@ -31,6 +31,43 @@ func TestNoPattern(t *testing.T) {
 	assert.Equal(t, []int(nil), idx)
 }
 
+func TestListHeaders(t *testing.T) {
+	data := make([]byte, 12)
+	data[3] = '\037'
+	data[4] = '\213'
+	data[5] = '\010'
+
+	data[9] = '\037'
+	data[10] = '\213'
+	data[11] = '\010'
+
+	ke := NewKernelExtractor(&data, true)
+
+	err := ke.ListAllHeadersFound()
+	assert.Nil(t, err)
+}
+
+func TestKernelDetect(t *testing.T) {
+	data := []byte("             Linux  \n \n kernel/params.c \n ")
+	ke := NewKernelExtractor(&data, false)
+
+	isKernel := ke.isKernelImage(data)
+	assert.True(t, isKernel)
+
+	data2 := []byte("             Lin  \n \n kernel/params.c \n ")
+	isKernel = ke.isKernelImage(data2)
+	assert.False(t, isKernel)
+
+	data = []byte("")
+	isKernel = ke.isKernelImage(data)
+	assert.False(t, isKernel)
+
+	// test ignore
+	ke = NewKernelExtractor(&data, true)
+	isKernel = ke.isKernelImage([]byte(""))
+	assert.True(t, isKernel)
+}
+
 func TestGZIPIndex(t *testing.T) {
 	data := make([]byte, 50)
 	data[10] = '\037'

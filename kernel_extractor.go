@@ -1,11 +1,13 @@
 package main
 
+/*
+	Original source: https://github.com/Caesurus/extract-vmlinux-v2
+*/
+
 import (
 	"bytes"
 	"fmt"
 	"index/suffixarray"
-	"io/ioutil"
-	"log"
 	"sort"
 )
 
@@ -18,8 +20,8 @@ type supportedAlgo struct {
 
 // KernelExtractor ...
 type KernelExtractor struct {
-	data []byte
-	algos              map[string]supportedAlgo
+	data             []byte
+	algos            map[string]supportedAlgo
 	ignoreValidation bool
 }
 
@@ -81,62 +83,60 @@ func NewKernelExtractor(data *[]byte, ignoreValidation bool) *KernelExtractor {
 	return &k
 }
 func (k KernelExtractor) isKernelImage(data []byte) bool {
-	if k.ignoreValidation{
+	if k.ignoreValidation {
 		return true
 	}
+	flagLinux := false
+	flagParam := false
 
-	flagLinux := bytes.IndexAny(data, "Linux") > 0
-	flagSyscall := bytes.IndexAny(data, "syscall") > 0
-	//flagParam := bytes.IndexAny(data, "kernel/params.c") > 0
+	flagLinux = bytes.Index(data, []byte("Linux")) > 0
+	//flagSyscall := bytes.IndexAny(data, "syscall") > 0
+	flagParam = bytes.Index(data, []byte("kernel/params.c")) > 0
 
-	if flagLinux && flagSyscall {
+	if flagLinux && flagParam {
 		return true
 	}
 	return false
 }
 
-func (k KernelExtractor) callExtractor(algo supportedAlgo, offset int) (err error) {
+func (k KernelExtractor) callExtractor(algo supportedAlgo, offset int) (extractedData []byte, err error) {
 	if algo.ExtractFunc != nil {
-		file, err := ioutil.TempFile("", algo.Name)
-		if err != nil {
-			log.Fatal(err)
-		}
-
 		extractedData, err := algo.ExtractFunc(k.ReturnBytes(offset))
 		if err == nil {
 			if k.isKernelImage(extractedData) {
-				bytesWritten, err := file.Write(extractedData)
-				if err == nil {
-					fmt.Printf("Wrote %d to file: %s\n", bytesWritten, file.Name())
-				} else {
-					fmt.Println("Extraction failed", err)
-				}
-			} else {
-				fmt.Println("Doesn't look like that was a valid Kernel Image, use -i to dump extracted content anyway")
+				return extractedData, err
 			}
+			err = fmt.Errorf("Doesn't look like that was a valid Kernel Image, use -i to dump extracted content anyway")
 		}
 	} else {
-		fmt.Printf("Currently don't support %s extraction\n", algo.Name)
+		err = fmt.Errorf("Currently don't support %s extraction", algo.Name)
 	}
-	return err
+	return nil, err
 }
 
 // ExtractAll will attempt to extract all recognized compressed files
-func (k KernelExtractor) ExtractAll() error {
+func (k KernelExtractor) ExtractAll() map[string][]byte {
+	var files = make(map[string][]byte)
+
 	for desc, algo := range k.algos {
 		found, offsets := k.searchPattern(algo.pattern)
 		if found {
 			fmt.Printf("%s header found at %v\n", desc, offsets)
 			for _, offset := range offsets {
 				fmt.Printf("Attempting extraction with %s offset:%d \n", desc, offset)
-				_ = k.callExtractor(algo, offset)
+				data, err := k.callExtractor(algo, offset)
+				if nil == err {
+					filename := fmt.Sprintf("vmlinux_%s_%d.bin", algo.Name, offset)
+					files[filename] = data
+				} else{
+					fmt.Println(err)
+				}
 			}
 		} else {
 			fmt.Printf(" No %s found\n", desc)
 		}
-
 	}
-	return nil
+	return files
 }
 
 // ReturnBytes Return []bytes from a given offset into the buffer

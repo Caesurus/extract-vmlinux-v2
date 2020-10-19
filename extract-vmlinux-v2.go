@@ -1,4 +1,5 @@
 package main
+
 /*
 	Original source: https://github.com/Caesurus/extract-vmlinux-v2
 */
@@ -13,7 +14,6 @@ import (
 )
 
 func main() {
-
 	parser := argparse.NewParser("extract-vmlinux-v2", "A more robust vmlinux extractor")
 	opts := argparse.Options{}
 	opts.Required = true
@@ -24,8 +24,6 @@ func main() {
 	// Parse input
 	err := parser.Parse(os.Args)
 	if err != nil {
-		// In case of error print error and print usage
-		// This can also be done by passing -h or --help flags
 		fmt.Print(parser.Usage(err))
 		os.Exit(1)
 	}
@@ -35,5 +33,19 @@ func main() {
 		log.Fatal(err)
 	}
 	ke := NewKernelExtractor(&data, *ignoreValidation)
-	ke.ExtractAll()
+	files := ke.ExtractAll()
+
+	for filename, extractedData := range files {
+		file, err := ioutil.TempFile("", filename)
+		if err != nil {
+			log.Fatal(err)
+		}
+		bytesWritten, err := file.Write(extractedData)
+		if err == nil {
+			fmt.Printf("Wrote %d bytes to file: %s\n", bytesWritten, file.Name())
+		} else {
+			fmt.Println("Extraction failed", err)
+		}
+	}
+
 }
