@@ -1,4 +1,7 @@
 package main
+/*
+	Original source: https://github.com/Caesurus/extract-vmlinux-v2
+*/
 
 import (
 	"fmt"
