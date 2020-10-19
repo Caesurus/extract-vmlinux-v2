@@ -7,6 +7,7 @@ import (
 	"io"
 
 	"github.com/itchio/lzma"
+	"github.com/pierrec/lz4"
 	"github.com/ulikunitz/xz"
 )
 
@@ -49,7 +50,19 @@ func extractLZMAData(data []byte) (resData []byte, err error) {
 	ioreader := bytes.NewReader(data)
 
 	r := lzma.NewReader(ioreader)
-	
+
+	var buf bytes.Buffer
+	if _, err = io.Copy(&buf, r); err != nil {
+		err = fmt.Errorf("io.Copy error %s", err)
+	}
+	return buf.Bytes(), err
+}
+
+func extractLZ4Data(data []byte) (resData []byte, err error) {
+	ioreader := bytes.NewReader(data)
+
+	r := lz4.NewReader(ioreader)
+
 	var buf bytes.Buffer
 	if _, err = io.Copy(&buf, r); err != nil {
 		err = fmt.Errorf("io.Copy error %s", err)

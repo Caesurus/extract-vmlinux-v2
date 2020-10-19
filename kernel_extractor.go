@@ -61,7 +61,7 @@ func NewKernelExtractor(data *[]byte, ignoreValidation bool) *KernelExtractor {
 
 	k.algos["LZ4"] = supportedAlgo{
 		Name:        "LZ4",
-		ExtractFunc: nil,
+		ExtractFunc: extractLZ4Data,
 		Suffix:      "lz4",
 		pattern:     []byte("\002!L\030"),
 	}
