@@ -17,6 +17,7 @@ func main() {
 	parser := argparse.NewParser(appName, "A more robust vmlinux extractor")
 	var inputFile *string = parser.String("f", "file", &argparse.Options{Help: "Input file to be processed"})
 	var ignoreValidation *bool = parser.Flag("i", "ignore", &argparse.Options{Help: "Ignore kernel verification, extract whatever is found"})
+	var listOnly *bool = parser.Flag("l", "list", &argparse.Options{Help: "List headers and offset found"})
 	var printVersion *bool = parser.Flag("V", "version", &argparse.Options{Help: "Print version info"})
 
 	// Parse input
@@ -31,6 +32,7 @@ func main() {
 		os.Exit(0)
 	}
 
+
 	if len(*inputFile) > 0 {
 		kernelFile, err := os.Open(*inputFile)
 		if err != nil {
@@ -43,6 +45,12 @@ func main() {
 			log.Fatal(err)
 		}
 		ke := NewKernelExtractor(&data, *ignoreValidation)
+
+		if *listOnly{
+			ke.ListAllHeadersFound()
+			os.Exit(0)
+		}
+
 		files := ke.ExtractAll()
 
 		for filename, extractedData := range files {
