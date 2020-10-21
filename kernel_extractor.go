@@ -8,6 +8,8 @@ import (
 	"bytes"
 	"fmt"
 	"index/suffixarray"
+	"io/ioutil"
+	"log"
 	"sort"
 )
 
@@ -31,6 +33,7 @@ func NewKernelExtractor(data *[]byte, ignoreValidation bool) *KernelExtractor {
 	k.ignoreValidation = ignoreValidation
 
 	k.algos = make(map[string]supportedAlgo)
+
 	k.algos["GZIP"] = supportedAlgo{
 		Name:        "GZIP",
 		ExtractFunc: extractGzipData,
@@ -49,7 +52,7 @@ func NewKernelExtractor(data *[]byte, ignoreValidation bool) *KernelExtractor {
 		Name:        "LZMA",
 		ExtractFunc: extractLZMAData,
 		Suffix:      "lzma",
-		pattern:     []byte("\135\000\000"),
+		pattern:     []byte("\135\000\000\000"),
 	}
 
 	k.algos["LZOP"] = supportedAlgo{
@@ -57,13 +60,6 @@ func NewKernelExtractor(data *[]byte, ignoreValidation bool) *KernelExtractor {
 		ExtractFunc: nil,
 		Suffix:      "lzop",
 		pattern:     []byte("\211\114\132"),
-	}
-
-	k.algos["LZ4"] = supportedAlgo{
-		Name:        "LZ4",
-		ExtractFunc: extractLZ4Data,
-		Suffix:      "lz4",
-		pattern:     []byte("\002!L\030"),
 	}
 
 	k.algos["XZ"] = supportedAlgo{
@@ -78,6 +74,13 @@ func NewKernelExtractor(data *[]byte, ignoreValidation bool) *KernelExtractor {
 		ExtractFunc: nil,
 		Suffix:      "zstd",
 		pattern:     []byte("(\265/\375"),
+	}
+
+	k.algos["LZ4"] = supportedAlgo{
+		Name:        "LZ4",
+		ExtractFunc: extractLZ4Data,
+		Suffix:      "lz4",
+		pattern:     []byte("\002!L\030"),
 	}
 
 	return &k
@@ -112,6 +115,19 @@ func (k KernelExtractor) callExtractor(algo supportedAlgo, offset int) (extracte
 		err = fmt.Errorf("Currently don't support %s extraction", algo.Name)
 	}
 	return nil, err
+}
+
+func createTempFileOutput(data []byte, fileprefix string) {
+	file, err := ioutil.TempFile("", fileprefix)
+	if err != nil {
+		log.Fatal(err)
+	}
+	bytesWritten, err := file.Write(data)
+	if err == nil {
+		fmt.Printf("Wrote %d bytes to file: %s\n", bytesWritten, file.Name())
+	} else {
+		fmt.Println("Extraction failed", err)
+	}
 }
 
 // ExtractAll will attempt to extract all recognized compressed files

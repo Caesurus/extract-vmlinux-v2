@@ -6,15 +6,15 @@ import (
 	"fmt"
 	"io"
 
+	"github.com/caesurus/lz4"
+
 	"github.com/itchio/lzma"
-	"github.com/pierrec/lz4"
 	"github.com/ulikunitz/xz"
 )
 
 func extractGzipData(data []byte) (resData []byte, err error) {
 	b := bytes.NewBuffer(data)
 
-	//var r io.Reader
 	r, err := gzip.NewReader(b)
 	if err != nil {
 		return
@@ -61,7 +61,7 @@ func extractLZMAData(data []byte) (resData []byte, err error) {
 func extractLZ4Data(data []byte) (resData []byte, err error) {
 	ioreader := bytes.NewReader(data)
 
-	r := lz4.NewReader(ioreader)
+	r := lz4.NewReaderLegacy(ioreader)
 
 	var buf bytes.Buffer
 	if _, err = io.Copy(&buf, r); err != nil {
