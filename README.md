@@ -1,6 +1,24 @@
 # extract-vmlinux-v2
 golang implementation of [extract-vmlinux](https://github.com/torvalds/linux/blob/master/scripts/extract-vmlinux) script
 
+## Installing
+
+```
+go get -u github.com/Caesurus/extract-vmlinux-v2
+```
+
+TODO: Alternative methods to come...
+
+---
+## Compressions
+
+### Supported
+At the moment I have only found good native support for `gzip`/`bzip`/`lzma`/`lz4`/`xz`.
+
+### Not Supported
+I haven't found good support for `zstd`/`lzop`.
+
+---
 ## Why ???
 The extract-vmlinux script that is provided in the linux repo only really caters to x86. It checks whether the extracted output is an ELF file, but on may embedded systems, the extracted vmlinux file is not an elf file recognized by `readelf`.
 ```bash
