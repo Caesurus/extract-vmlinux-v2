@@ -43,7 +43,7 @@ func NewKernelExtractor(data *[]byte, ignoreValidation bool) *KernelExtractor {
 
 	k.algos["BZIP"] = supportedAlgo{
 		Name:        "BZIP",
-		ExtractFunc: nil,
+		ExtractFunc: extractBzipData,
 		Suffix:      "bz",
 		pattern:     []byte("BZh"),
 	}
@@ -55,27 +55,6 @@ func NewKernelExtractor(data *[]byte, ignoreValidation bool) *KernelExtractor {
 		pattern:     []byte("\135\000\000\000"),
 	}
 
-	k.algos["LZOP"] = supportedAlgo{
-		Name:        "LZOP",
-		ExtractFunc: nil,
-		Suffix:      "lzop",
-		pattern:     []byte("\211\114\132"),
-	}
-
-	k.algos["XZ"] = supportedAlgo{
-		Name:        "XZ",
-		ExtractFunc: nil,
-		Suffix:      "xz",
-		pattern:     []byte("\3757zXZ\000"),
-	}
-
-	k.algos["ZSTD"] = supportedAlgo{
-		Name:        "ZSTD",
-		ExtractFunc: nil,
-		Suffix:      "zstd",
-		pattern:     []byte("(\265/\375"),
-	}
-
 	k.algos["LZ4"] = supportedAlgo{
 		Name:        "LZ4",
 		ExtractFunc: extractLZ4Data,
@@ -83,6 +62,27 @@ func NewKernelExtractor(data *[]byte, ignoreValidation bool) *KernelExtractor {
 		pattern:     []byte("\002!L\030"),
 	}
 
+	k.algos["XZ"] = supportedAlgo{
+		Name:        "XZ",
+		ExtractFunc: extractXZData,
+		Suffix:      "xz",
+		pattern:     []byte("\3757zXZ\000"),
+	}
+	/*
+		k.algos["ZSTD"] = supportedAlgo{
+			Name:        "ZSTD",
+			ExtractFunc: extractZstdData,
+			Suffix:      "zstd",
+			pattern:     []byte("(\265/\375"),
+		}
+
+		k.algos["LZOP"] = supportedAlgo{
+			Name:        "LZOP",
+			ExtractFunc: nil,
+			Suffix:      "lzop",
+			pattern:     []byte("\211\114\132"),
+		}
+	*/
 	return &k
 }
 func (k KernelExtractor) isKernelImage(data []byte) bool {
@@ -92,9 +92,9 @@ func (k KernelExtractor) isKernelImage(data []byte) bool {
 	flagLinux := false
 	flagParam := false
 
-	flagLinux = bytes.Index(data, []byte("Linux")) > 0
+	flagLinux = bytes.Index(data, []byte("Linux version")) > 0
 	//flagSyscall := bytes.IndexAny(data, "syscall") > 0
-	flagParam = bytes.Index(data, []byte("kernel/params.c")) > 0
+	flagParam = bytes.Index(data, []byte("jiffies")) > 0
 
 	if flagLinux && flagParam {
 		return true

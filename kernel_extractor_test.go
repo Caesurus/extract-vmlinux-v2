@@ -48,13 +48,13 @@ func TestListHeaders(t *testing.T) {
 }
 
 func TestKernelDetect(t *testing.T) {
-	data := []byte("             Linux  \n \n kernel/params.c \n ")
+	data := []byte("             Linux version\n \n jiffies \n ")
 	ke := NewKernelExtractor(&data, false)
 
 	isKernel := ke.isKernelImage(data)
 	assert.True(t, isKernel)
 
-	data2 := []byte("             Lin  \n \n kernel/params.c \n ")
+	data2 := []byte("             Lin  \n \n jiffies \n ")
 	isKernel = ke.isKernelImage(data2)
 	assert.False(t, isKernel)
 
@@ -127,19 +127,6 @@ func TestLZMAIndex(t *testing.T) {
 	assert.Equal(t, []int{10}, idx)
 }
 
-func TestLZOPIndex(t *testing.T) {
-	data := make([]byte, 50)
-	data[10] = '\211'
-	data[11] = '\114'
-	data[12] = '\132'
-
-	ke := NewKernelExtractor(&data, true)
-
-	found, idx := ke.searchLZOPPattern()
-	assert.True(t, found)
-	assert.Equal(t, []int{10}, idx)
-}
-
 func TestLZ4Index(t *testing.T) {
 	data := make([]byte, 50)
 	data[10] = '\002'
@@ -150,20 +137,6 @@ func TestLZ4Index(t *testing.T) {
 	ke := NewKernelExtractor(&data, true)
 
 	found, idx := ke.searchLZ4Pattern()
-	assert.True(t, found)
-	assert.Equal(t, []int{10}, idx)
-}
-
-func TestZSTDIndex(t *testing.T) {
-	data := make([]byte, 50)
-	data[10] = '('
-	data[11] = '\265'
-	data[12] = '/'
-	data[13] = '\375'
-
-	ke := NewKernelExtractor(&data, true)
-
-	found, idx := ke.searchZSTDPattern()
 	assert.True(t, found)
 	assert.Equal(t, []int{10}, idx)
 }
