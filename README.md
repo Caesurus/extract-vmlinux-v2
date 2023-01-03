@@ -4,7 +4,7 @@ golang implementation of [extract-vmlinux](https://github.com/torvalds/linux/blo
 ## Installing
 
 ```
-go get -u github.com/Caesurus/extract-vmlinux-v2
+go install github.com/Caesurus/extract-vmlinux-v2@latest
 ```
 
 TODO: Alternative methods to come...
